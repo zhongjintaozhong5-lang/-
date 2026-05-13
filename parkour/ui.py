@@ -64,6 +64,10 @@ class TitleScreen:
         start_text.set_alpha(alpha)
         surface.blit(start_text, start_text.get_rect(center=(w // 2, h // 2 + 140)))
 
+        # 返回提示
+        esc_text = self.info_font.render("按 ESC 返回主菜单", True, (100, 100, 120))
+        surface.blit(esc_text, esc_text.get_rect(center=(w // 2, h // 2 + 175)))
+
         # 版本信息
         ver = self.info_font.render("基于《银翼出击》世界观", True, (80, 80, 100))
         surface.blit(ver, ver.get_rect(center=(w // 2, h - 30)))
@@ -176,7 +180,7 @@ class GameOver:
 
         if self.timer > 60:
             blink = (math.sin(self.timer * 0.05) + 1) * 0.5
-            restart = self.font_s.render("按 Space 重新开始", True, (200, 200, 200))
+            restart = self.font_s.render("按 Space 重新开始  |  ESC 返回主菜单", True, (200, 200, 200))
             restart.set_alpha(int(150 + 105 * blink))
             surface.blit(restart, restart.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 60)))
 
@@ -207,5 +211,7 @@ class WinScreen:
         surface.blit(score_text, score_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20)))
 
         if self.timer > 90:
-            restart = self.font_s.render("按 Space 再来一次", True, (180, 180, 200))
+            blink = (math.sin(self.timer * 0.05) + 1) * 0.5
+            restart = self.font_s.render("按 Space 再来一次  |  ESC 返回主菜单", True, (180, 180, 200))
+            restart.set_alpha(int(150 + 105 * blink))
             surface.blit(restart, restart.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 70)))

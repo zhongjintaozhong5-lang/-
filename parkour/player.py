@@ -132,9 +132,9 @@ class ParkourPlayer:
         if self.invincible > 0:
             return False
         self.hp -= dmg
-        self.invincible = 30
         if self.hp <= 0:
             self.lose_life()
+        self.invincible = 30
         return self.hp <= 0
 
     def shoot(self):

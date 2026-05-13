@@ -111,12 +111,20 @@ class ParkourGame:
             elif event.type == pygame.KEYDOWN:
                 if self.state == STATE_TITLE and event.key in (pygame.K_SPACE, pygame.K_RETURN):
                     self.reset_game()
+                elif self.state == STATE_TITLE and event.key == pygame.K_ESCAPE:
+                    self.running = False  # 返回主菜单
                 elif self.state == STATE_GAME_OVER:
                     if event.key == pygame.K_SPACE and self.game_over and self.game_over.timer > 60:
                         self.reset_game()
+                    elif event.key == pygame.K_ESCAPE:
+                        self.state = STATE_TITLE
+                        self.running = False
                 elif self.state == STATE_WIN:
                     if event.key == pygame.K_SPACE and self.win_screen and self.win_screen.timer > 90:
                         self.state = STATE_TITLE
+                    elif event.key == pygame.K_ESCAPE:
+                        self.state = STATE_TITLE
+                        self.running = False
                 elif self.state == STATE_PLAYING:
                     if event.key in (pygame.K_z, pygame.K_LSHIFT):
                         self.keys_down.add("shoot")
@@ -252,7 +260,7 @@ class ParkourGame:
 
             # 敌方子弹 vs 玩家
             for b in self.enemy_bullets[:]:
-                if br.colliderect(b.get_rect()):
+                if pr.colliderect(b.get_rect()):
                     b.alive = False
                     self.player.take_damage(1)
                     self.particles.explode(b.x, b.y, 10, [(255,60,60),(WHITE)], 2, 3)
@@ -290,6 +298,8 @@ class ParkourGame:
 
             # 检查玩家存活
             if not self.player.alive:
+                # 死亡爆炸特效
+                self.particles.boss_explode(self.player.x, self.player.y)
                 self.state = STATE_GAME_OVER
                 self.game_over = GameOver(self.score, self.level)
                 if self.score > self.high_score:

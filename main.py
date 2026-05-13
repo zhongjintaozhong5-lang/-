@@ -107,23 +107,26 @@ def main():
             except:
                 continue
 
-    mode = show_mode_menu(temp_screen)
-    if mode is None:
-        return
+    while True:
+        mode = show_mode_menu(temp_screen)
+        if mode is None:
+            break
 
-    if mode == "跑酷模式":
-        from parkour.config import SCREEN_WIDTH, SCREEN_HEIGHT
-        from parkour.game import ParkourGame
-        screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("银翼出击：逃亡 - 跑酷射击")
-        game = ParkourGame(screen)
-    else:
-        from game.game import Game
-        screen = temp_screen
-        pygame.display.set_caption(TITLE)
-        game = Game(screen)
+        if mode == "跑酷模式":
+            from parkour.config import SCREEN_WIDTH, SCREEN_HEIGHT
+            from parkour.game import ParkourGame
+            screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+            pygame.display.set_caption("银翼出击：逃亡 - 跑酷射击")
+            game = ParkourGame(screen)
+        else:
+            from game.game import Game
+            screen = temp_screen
+            screen = pygame.display.set_mode((540, 780))
+            pygame.display.set_caption(TITLE)
+            game = Game(screen)
 
-    game.run()
+        game.run()
+        # 游戏结束后回到模式选择
 
 
 if __name__ == "__main__":

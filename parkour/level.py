@@ -89,99 +89,75 @@ class LevelGenerator:
         seed = 42 + self.level * 7
         rng = random.Random(seed)
 
-        # 地面平台（每隔一段距离放置）
+        # 地面平台
         ground_y = SCREEN_HEIGHT - 40
         last_x = 0
 
-        # 起始安全平台
-        self.platforms.append(Platform(0, ground_y, 200, 40, "normal"))
+        # 连续地面（无断头）
+        self.platforms.append(Platform(0, ground_y, 400, 40, "normal"))
 
-        segment_length = 400 + self.level * 50
+        segment_length = 250 + self.level * 30
         plat_count = self.length // segment_length
 
         for i in range(plat_count):
-            seg_start = last_x + segment_length
+            plat_w = rng.randint(300, 500)
 
-            # 地面间隙（随关卡增大）
-            gap = rng.randint(40, 60 + self.level * 15)
-            gap = min(gap, 180)
+            # 地面平台（无缝连接）
+            ground_plat = Platform(last_x, ground_y, plat_w, 20, "normal")
+            self.platforms.append(ground_plat)
 
-            # 平台配置
-            plat_w = rng.randint(120, 280 - self.level * 10)
-            plat_w = max(60, plat_w)
+            # 上层奖励路线（跳上去有额外道具和敌人）
+            if i > 1 and rng.random() < 0.4 + self.level * 0.05:
+                up_y = ground_y - rng.randint(90, 160)
+                up_w = rng.randint(80, 160)
+                up_x = last_x + rng.randint(20, max(40, plat_w - up_w - 20))
+                self.platforms.append(Platform(up_x, up_y, up_w, 16, "normal"))
 
-            # 高度变化
-            if i % 3 == 0:
-                y = ground_y - rng.randint(40, 100)
-            elif i % 3 == 1:
-                y = ground_y - rng.randint(80, 160)
-            else:
-                y = ground_y
-
-            # 平台类型
-            ptype = "normal"
-            if self.level >= 3 and i > 2 and rng.random() < 0.25:
-                ptype = "moving" if rng.random() < 0.6 else "crumbling"
-
-            plat = Platform(seg_start + gap, y, plat_w, 20, ptype)
-            self.platforms.append(plat)
-
-            # 上层小平台（跳跃路线）
-            if i > 0 and rng.random() < 0.5 + self.level * 0.05:
-                up_y = y - rng.randint(90, 180)
-                up_w = rng.randint(50, 120)
-                up_plat = Platform(seg_start + gap + 30, up_y, up_w, 16, "normal")
-                self.platforms.append(up_plat)
-
-                # 上层平台的敌人
-                if rng.random() < 0.4 + self.level * 0.05:
-                    etype = "walker" if rng.random() < 0.6 else "flyer"
+                # 上层敌人
+                if rng.random() < 0.5:
+                    etype = "flyer" if rng.random() < 0.5 else "walker"
                     self.enemies.append({
-                        "x": up_plat.x + up_w // 2,
-                        "y": up_plat.y - 20,
+                        "x": up_x + up_w // 2,
+                        "y": up_y - 20,
                         "type": etype
+                    })
+                # 上层道具
+                if rng.random() < 0.7:
+                    self.powerups.append({
+                        "x": up_x + up_w // 2,
+                        "y": up_y - 40,
+                        "type": "weapon" if rng.random() < 0.4 else "battery"
                     })
 
             # 地面敌人
-            if rng.random() < 0.3 + self.level * 0.05:
-                etype = "walker"
+            if rng.random() < 0.4 + self.level * 0.05:
                 self.enemies.append({
-                    "x": seg_start + gap + plat_w // 2,
-                    "y": y - 20,
-                    "type": etype
+                    "x": last_x + plat_w // 2,
+                    "y": ground_y - 20,
+                    "type": "walker" if rng.random() < 0.6 else "turret"
                 })
 
             # 空中敌人
-            if rng.random() < 0.2 + self.level * 0.05:
-                self.enemies.append({
-                    "x": seg_start + gap + plat_w // 2,
-                    "y": rng.randint(80, 250),
-                    "type": "flyer"
-                })
+            if rng.random() < 0.25 + self.level * 0.03:
+                fx = last_x + rng.randint(0, plat_w)
+                fy = rng.randint(100, 250)
+                self.enemies.append({"x": fx, "y": fy, "type": "flyer"})
 
-            # 炮台
-            if self.level >= 2 and rng.random() < 0.15 + self.level * 0.02:
-                self.enemies.append({
-                    "x": seg_start + gap + plat_w // 2,
-                    "y": ground_y - 40,
-                    "type": "turret"
-                })
-
-            # 收集道具
-            if rng.random() < 0.3:
+            # 地面道具
+            if rng.random() < 0.6:
                 self.powerups.append({
-                    "x": seg_start + gap + plat_w // 2,
-                    "y": y - 60,
+                    "x": last_x + plat_w // 2,
+                    "y": ground_y - 50,
                     "type": "battery"
                 })
-            if rng.random() < 0.15 and self.level > 1:
+            if rng.random() < 0.3:
                 self.powerups.append({
-                    "x": seg_start + gap + plat_w // 2,
-                    "y": y - 100,
+                    "x": last_x + plat_w // 2 + 40,
+                    "y": ground_y - 50,
                     "type": "weapon"
                 })
 
-            last_x = seg_start + gap + plat_w
+            last_x += plat_w
 
         # 终点安全平台（Boss战区域）
         self.platforms.append(Platform(self.boss_x - 50, ground_y, 500, 40, "normal"))
